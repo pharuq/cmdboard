@@ -54,6 +54,27 @@ var rootCmd = &cobra.Command{
 				addNode(c, root)
 			}
 		}
+
+		page := tview.NewPages()
+		modal := tview.NewModal().
+			SetText("Do you want to delete the command?").
+			AddButtons([]string{"Delete", "Cancel"}).
+			SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+				if buttonLabel == "Delete" {
+					currentNode := tree.GetCurrentNode()
+					currentNodeId := currentNode.GetReference().(int)
+					parentNode := parentNodeById[currentNodeId]
+					parentNode.RemoveChild(currentNode)
+					delete(parentNodeById, currentNodeId)
+					delete(commands, currentNodeId)
+					writeCommand()
+				}
+				page.SwitchToPage("tree")
+			})
+		pages := page.
+			AddPage("tree", tree, true, true).
+			AddPage("modal", modal, true, false)
+
 		tree.SetSelectedFunc(func(node *tview.TreeNode) {
 			reference := node.GetReference()
 			if reference == nil {
@@ -80,6 +101,7 @@ var rootCmd = &cobra.Command{
 				}
 			}
 		})
+
 		tree.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 			switch event.Key() {
 			case tcell.KeyRune:
@@ -87,19 +109,14 @@ var rootCmd = &cobra.Command{
 				case 'e':
 					return nil
 				case 'd':
-					currentNode := tree.GetCurrentNode()
-					currentNodeId := currentNode.GetReference().(int)
-					parentNode := parentNodeById[currentNodeId]
-					parentNode.RemoveChild(currentNode)
-					delete(parentNodeById, currentNodeId)
-					delete(commands, currentNodeId)
-					writeCommand()
+					page.SwitchToPage("modal")
 					return nil
 				}
 			}
 			return event
 		})
-		if err := tview.NewApplication().SetRoot(tree, true).Run(); err != nil {
+
+		if err := tview.NewApplication().SetRoot(pages, true).Run(); err != nil {
 			panic(err)
 		}
 		fmt.Fprintln(os.Stdout, outputText)

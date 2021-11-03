@@ -4,6 +4,8 @@
 *.so
 *.dylib
 
+dist/
+
 # Test binary, build with `go test -c`
 *.test
 
@@ -14,3 +16,5 @@ log/*
 vendor*
 
 cmdboard.json
+.goreleaser.yml
+

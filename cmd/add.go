@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"cmdboard/cmd/utils"
+	"cmdboard/typefile"
 	"errors"
 	"log"
 	"strings"
@@ -14,6 +16,7 @@ type Options struct {
 }
 
 var o = &Options{}
+var commands = map[int]typefile.Command{}
 
 var addCmd = &cobra.Command{
 	Use:   "add",
@@ -26,14 +29,14 @@ var addCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := LoadCommands()
+		c, err := utils.LoadCommands()
 		if err != nil {
 			log.Fatal(err)
 			return err
 		}
 		commands = c
 
-		parentNode := Command{Id: 0}
+		parentNode := typefile.Command{Id: 0}
 		// [TODO]o.dirの最初と最後が"/"の場合は取り除く
 		if o.dir != "" {
 			dirs := strings.Split(o.dir, "/")
@@ -44,7 +47,7 @@ var addCmd = &cobra.Command{
 		}
 
 		id := getNewId()
-		node := Command{
+		node := typefile.Command{
 			Id:       id,
 			Name:     args[0],
 			Comment:  o.comment,
@@ -53,7 +56,7 @@ var addCmd = &cobra.Command{
 		}
 		commands[id] = node
 
-		if err := writeCommand(); err != nil {
+		if err := utils.WriteCommand(commands); err != nil {
 			log.Fatal(err)
 			return err
 		}
@@ -68,11 +71,11 @@ func init() {
 	addCmd.Flags().StringVarP(&o.comment, "comment", "c", "", "Command's comment")
 }
 
-func findOrCreateNode(name string, parentId int) Command {
+func findOrCreateNode(name string, parentId int) typefile.Command {
 	node, ok := findNode(name, parentId)
 	if !ok {
 		id := getNewId()
-		node = Command{
+		node = typefile.Command{
 			Id:       id,
 			Name:     name,
 			Comment:  "",
@@ -84,18 +87,18 @@ func findOrCreateNode(name string, parentId int) Command {
 	return node
 }
 
-func findNode(name string, parentId int) (Command, bool) {
+func findNode(name string, parentId int) (typefile.Command, bool) {
 	for _, c := range commands {
 		if c.Name == name && c.ParentId == parentId {
 			return c, true
 		}
 	}
-	return Command{}, false
+	return typefile.Command{}, false
 }
 
 func getNewId() int {
 	a := []int{}
-	for k, _ := range commands {
+	for k := range commands {
 		a = append(a, k)
 	}
 	return maxInt(a) + 1

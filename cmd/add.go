@@ -5,6 +5,7 @@ import (
 	"cmdboard/typefile"
 	"errors"
 	"log"
+	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -37,9 +38,8 @@ var addCmd = &cobra.Command{
 		commands = c
 
 		parentNode := typefile.Command{Id: 0}
-		// [TODO]o.dirの最初と最後が"/"の場合は取り除く
 		if o.dir != "" {
-			dirs := strings.Split(o.dir, "/")
+			dirs := strings.Split(removedExstraCharForDirs(o.dir), "/")
 
 			for _, d := range dirs {
 				parentNode = findOrCreateNode(d, parentNode.Id)
@@ -112,4 +112,9 @@ func maxInt(a []int) int {
 		}
 	}
 	return max
+}
+
+func removedExstraCharForDirs(s string) string {
+	regexp := regexp.MustCompile("(^/|/$)")
+	return regexp.ReplaceAllString(s, "")
 }

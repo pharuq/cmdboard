@@ -4,6 +4,7 @@ import (
 	"cmdboard/cmd/utils"
 	"cmdboard/typefile"
 	"runtime"
+	"sort"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -68,11 +69,11 @@ func (v *Viewer) initTree() {
 		SetRoot(root).
 		SetCurrentNode(root)
 
-	for _, c := range v.commands {
+	sortedFor(v.commands, func(c typefile.Command) {
 		if c.ParentId == 0 {
 			addNode(c, root)
 		}
-	}
+	})
 
 	v.commentView = tview.NewTextView()
 	v.commentView.SetBorder(true)
@@ -92,11 +93,11 @@ func (v *Viewer) initTree() {
 		nodeColor := node.GetColor()
 		if nodeColor == tcell.ColorGreen {
 			if len(node.GetChildren()) == 0 {
-				for _, c := range v.commands {
+				sortedFor(v.commands, func(c typefile.Command) {
 					if reference == c.ParentId {
 						addNode(c, node)
 					}
-				}
+				})
 			} else {
 				// Collapse if visible, expand if collapsed.
 				node.SetExpanded(!node.IsExpanded())
@@ -173,4 +174,15 @@ func addNode(c typefile.Command, parentNode *tview.TreeNode) {
 	}
 	parentNode.AddChild(newNode)
 	parentNodeById[c.Id] = parentNode
+}
+
+func sortedFor(m map[int]typefile.Command, f func(typefile.Command)) {
+	var keys []int
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+	for _, k := range keys {
+		f(m[k])
+	}
 }

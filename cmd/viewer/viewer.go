@@ -69,7 +69,7 @@ func (v *Viewer) initTree() {
 		SetRoot(root).
 		SetCurrentNode(root)
 
-	sortedFor(v.commands, func(c typefile.Command) {
+	go sortedFor(v.commands, func(c typefile.Command) {
 		if c.ParentId == 0 {
 			addNode(c, root)
 		}
@@ -93,7 +93,7 @@ func (v *Viewer) initTree() {
 		nodeColor := node.GetColor()
 		if nodeColor == tcell.ColorGreen {
 			if len(node.GetChildren()) == 0 {
-				sortedFor(v.commands, func(c typefile.Command) {
+				go sortedFor(v.commands, func(c typefile.Command) {
 					if reference == c.ParentId {
 						addNode(c, node)
 					}

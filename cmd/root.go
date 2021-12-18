@@ -7,9 +7,15 @@ import (
 	"log"
 	"os"
 
+	"github.com/atotto/clipboard"
 	"github.com/spf13/cobra"
 )
 
+type OptionsForRoot struct {
+	need_copy bool
+}
+
+var optionsForRoot = &OptionsForRoot{}
 var rootCmd = &cobra.Command{
 	Use:   "cmdboard",
 	Short: "A brief description of your application",
@@ -24,6 +30,9 @@ var rootCmd = &cobra.Command{
 		viewer.View(c)
 
 		fmt.Fprintln(os.Stdout, viewer.SelectedText())
+		if optionsForRoot.need_copy {
+			clipboard.WriteAll(viewer.SelectedText())
+		}
 	},
 }
 
@@ -32,4 +41,5 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.Flags().BoolVarP(&optionsForRoot.need_copy, "copy", "c", false, "Copy the result to the clipboard.")
 }

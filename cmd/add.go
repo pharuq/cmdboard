@@ -11,12 +11,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type Options struct {
+type OptionsForAdd struct {
 	dir     string
 	comment string
 }
 
-var o = &Options{}
+var optionsForAdd = &OptionsForAdd{}
 var commands = map[int]typefile.Command{}
 
 var addCmd = &cobra.Command{
@@ -38,8 +38,8 @@ var addCmd = &cobra.Command{
 		commands = c
 
 		parentNode := typefile.Command{Id: 0}
-		if o.dir != "" {
-			dirs := strings.Split(removedExstraCharForDirs(o.dir), "/")
+		if optionsForAdd.dir != "" {
+			dirs := strings.Split(removedExstraCharForDirs(optionsForAdd.dir), "/")
 
 			for _, d := range dirs {
 				parentNode = findOrCreateNode(d, parentNode.Id)
@@ -50,7 +50,7 @@ var addCmd = &cobra.Command{
 		node := typefile.Command{
 			Id:       id,
 			Name:     args[0],
-			Comment:  o.comment,
+			Comment:  optionsForAdd.comment,
 			ParentId: parentNode.Id,
 			IsDir:    false,
 		}
@@ -67,8 +67,8 @@ var addCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(addCmd)
-	addCmd.Flags().StringVarP(&o.dir, "dir", "d", "", "Directory for storing commands")
-	addCmd.Flags().StringVarP(&o.comment, "comment", "c", "", "Command's comment")
+	addCmd.Flags().StringVarP(&optionsForAdd.dir, "dir", "d", "", "Directory for storing commands")
+	addCmd.Flags().StringVarP(&optionsForAdd.comment, "comment", "c", "", "Command's comment")
 }
 
 func findOrCreateNode(name string, parentId int) typefile.Command {

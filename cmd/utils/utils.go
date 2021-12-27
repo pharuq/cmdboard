@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"cmdboard/constfile"
 	"cmdboard/typefile"
 	"encoding/json"
 	"io/ioutil"
@@ -8,7 +9,7 @@ import (
 )
 
 func LoadCommands() (commands map[int]typefile.Command, err error) {
-	bytes, err := ioutil.ReadFile("cmdboard.json")
+	bytes, err := ioutil.ReadFile(constfile.StoredFileName)
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
@@ -27,6 +28,6 @@ func WriteCommand(commands map[int]typefile.Command) error {
 	if err != nil {
 		return err
 	}
-	ioutil.WriteFile("cmdboard.json", commandsJson, 0664)
+	ioutil.WriteFile(constfile.StoredFileName, commandsJson, 0664)
 	return nil
 }

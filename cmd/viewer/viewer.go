@@ -12,8 +12,10 @@ import (
 	"github.com/rivo/tview"
 )
 
-var parentNodeById = map[int]*tview.TreeNode{}
-var selectedText string
+var (
+	parentNodeById = map[int]*tview.TreeNode{}
+	selectedText   string
+)
 
 type Viewer struct {
 	commands    map[int]typefile.Command

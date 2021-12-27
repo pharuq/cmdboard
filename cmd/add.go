@@ -16,8 +16,10 @@ type OptionsForAdd struct {
 	comment string
 }
 
-var optionsForAdd = &OptionsForAdd{}
-var commands = map[int]typefile.Command{}
+var (
+	optionsForAdd = &OptionsForAdd{}
+	commands      = map[int]typefile.Command{}
+)
 
 var addCmd = &cobra.Command{
 	Use:   "add",

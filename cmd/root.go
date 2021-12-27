@@ -18,8 +18,8 @@ type OptionsForRoot struct {
 var optionsForRoot = &OptionsForRoot{}
 var rootCmd = &cobra.Command{
 	Use:   "cmdboard",
-	Short: "A brief description of your application",
-	Long:  `TDB`,
+	Short: "Displays a list of saved commands.",
+	Long:  `Displays a list of saved commands.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		c, err := utils.LoadCommands()
 		if err != nil {

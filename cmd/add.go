@@ -23,8 +23,8 @@ var (
 
 var addCmd = &cobra.Command{
 	Use:   "add",
-	Short: "register command",
-	Long:  "register command",
+	Short: "register command to tree",
+	Long:  "register command to tree",
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
 			return errors.New("specify only one argument")
@@ -69,8 +69,8 @@ var addCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(addCmd)
-	addCmd.Flags().StringVarP(&optionsForAdd.dir, "dir", "d", "", "Directory for storing commands")
-	addCmd.Flags().StringVarP(&optionsForAdd.comment, "comment", "c", "", "Command's comment")
+	addCmd.Flags().StringVarP(&optionsForAdd.dir, "dir", "d", "", "Specify a directory for storing command")
+	addCmd.Flags().StringVarP(&optionsForAdd.comment, "comment", "c", "", "Specify a comment for command")
 }
 
 func findOrCreateNode(name string, parentId int) typefile.Command {

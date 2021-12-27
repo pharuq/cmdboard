@@ -105,6 +105,10 @@ func getNewId() int {
 }
 
 func maxInt(a []int) int {
+	if len(a) == 0 {
+		return 1
+	}
+
 	max := a[0]
 	for i := 1; i < len(a); i++ {
 		if max < a[i] {

@@ -1,9 +1,13 @@
 # cmdboard
 
 `cmdboard` is a simple command line tool for storing shell commands. 
-This is especially useful when you cannot follow commands from history, such as when accessing a container.
+It is especially useful in the following use cases:
+- Record a series of operations as a group like a runbook.
+- Select a command from the list when you cannot follow the command from history, such as when accessing a container.
+- When you want to make a note of the command
 
 # Demo
+
 
 
 # Requirement

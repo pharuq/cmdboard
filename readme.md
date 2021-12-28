@@ -7,8 +7,7 @@ It is especially useful in the following use cases:
 - When you want to make a note of the command
 
 # Demo
-
-
+![cmdboard_demo](https://user-images.githubusercontent.com/33982301/147541938-7965d784-9dec-4cdb-a823-00f143456c3b.gif)
 
 # Requirement
 Nothing.

@@ -10,24 +10,36 @@ This is especially useful when you cannot follow commands from history, such as 
 Nothing.
 
 # Installation
+[Downloads](https://github.com/pharuq/cmdboard/releases)
+
 # Usage
-First run the `init` command.
+1. (optional)Specify the save destination of the file for saving the command with the environment variable `CMDBOARD_STORED_FILE_PATH`. If not specified, it will be saved in $HOME.
+Please be aware of the following points.
+- `~` cannot be used
+- Please specify the file name with the extension `.json`
+
+```sh
+echo export 'CMDBOARD_STORED_FILE_PATH=$HOME/.cmdboard.json' >> ~/.bashrc
+```
+
+2. Run the `init` command.
 
 ```sh
 cmdboard init
 ```
 
-Use the `add` command to add a command.
+3. Use the `add` command to add a command.
 If you want to specify a directory, Use the `-d` option.
 
 ```sh
 cmdboard add "register command" -d "specify directory"
 ```
 
-Open and select the list of saved commands.
+4. Open and select the list of saved commands.
+If you want to copy the selected command to the clipboard, add the `-c` option.
 
 ```sh
-cmdboard
+cmdboard -c
 ```
 
 |  Key   |  Action  |

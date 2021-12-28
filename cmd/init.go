@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"cmdboard/constfile"
+	"cmdboard/cmd/utils"
 	"fmt"
 	"os"
 
@@ -13,9 +13,11 @@ var initCmd = &cobra.Command{
 	Short: "Executes the initialization process.",
 	Long:  "Executes the initialization process.",
 	Run: func(cmd *cobra.Command, args []string) {
-		_, err := os.Stat(constfile.StoredFileName)
+		filePath := utils.StoredFilePath()
+
+		_, err := os.Stat(filePath)
 		if os.IsNotExist(err) {
-			fp, err := os.Create(constfile.StoredFileName)
+			fp, err := os.Create(filePath)
 			if err != nil {
 				fmt.Println(err)
 				return

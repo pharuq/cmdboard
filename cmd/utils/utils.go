@@ -1,15 +1,15 @@
 package utils
 
 import (
-	"cmdboard/constfile"
 	"cmdboard/typefile"
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"os"
 )
 
 func LoadCommands() (commands map[int]typefile.Command, err error) {
-	bytes, err := ioutil.ReadFile(constfile.StoredFileName)
+	bytes, err := ioutil.ReadFile(StoredFilePath())
 	if err != nil {
 		log.Fatal(err)
 		return nil, err
@@ -28,6 +28,14 @@ func WriteCommand(commands map[int]typefile.Command) error {
 	if err != nil {
 		return err
 	}
-	ioutil.WriteFile(constfile.StoredFileName, commandsJson, 0664)
+	ioutil.WriteFile(StoredFilePath(), commandsJson, 0664)
 	return nil
+}
+
+func StoredFilePath() (filePath string) {
+	filePath = os.Getenv("CMDBOARD_STORED_FILE_PATH")
+	if filePath == "" {
+		filePath = os.Getenv("HOME") + "/.cmdboard.json"
+	}
+	return
 }

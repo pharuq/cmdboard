@@ -33,9 +33,10 @@ cmdboard init
 
 3. Use the `add` command to add a command.
 If you want to specify a directory, Use the `-d` option.
+If you want to add a comment, add the `-c` option.
 
 ```sh
-cmdboard add "register command" -d "specify directory"
+cmdboard add "register command" -d "specify directory" -c "write description"
 ```
 
 4. Open and select the list of saved commands.

@@ -19,6 +19,7 @@ var (
 
 type Viewer struct {
 	commands    map[int]typefile.Command
+	app         *tview.Application
 	pages       *tview.Pages
 	flex        *tview.Flex
 	tree        *tview.TreeView
@@ -27,13 +28,15 @@ type Viewer struct {
 }
 
 func View(commands map[int]typefile.Command) {
+	app := tview.NewApplication()
 	viewer := &Viewer{
+		app:      app,
 		commands: commands,
 	}
 
 	viewer.initPages()
 
-	if err := tview.NewApplication().SetRoot(viewer.pages, true).Run(); err != nil {
+	if err := app.SetRoot(viewer.pages, true).Run(); err != nil {
 		panic(err)
 	}
 }
@@ -119,6 +122,7 @@ func (v *Viewer) initTree() {
 		case tcell.KeyRune:
 			switch event.Rune() {
 			case 'e':
+				v.app.Suspend(v.editMode)
 				return nil
 			case 'd':
 				v.pages.SwitchToPage("modal")
@@ -127,6 +131,22 @@ func (v *Viewer) initTree() {
 		}
 		return event
 	})
+}
+
+func (v *Viewer) editMode() {
+	node := v.tree.GetCurrentNode()
+	c := v.getCommandfromNode(node)
+	newName, newComment, err := Edit(c)
+	if err != nil {
+		panic(err)
+	}
+	c.Name = newName
+	c.Comment = newComment
+	v.commands[c.Id] = c
+	if err := utils.WriteCommand(v.commands); err != nil {
+		panic(err)
+	}
+	node.SetText(newName)
 }
 
 func (v *Viewer) initModal() {
@@ -187,4 +207,9 @@ func sortedFor(m map[int]typefile.Command, f func(typefile.Command)) {
 	for _, k := range keys {
 		f(m[k])
 	}
+}
+
+func (v *Viewer) getCommandfromNode(node *tview.TreeNode) typefile.Command {
+	reference := node.GetReference().(int)
+	return v.commands[reference]
 }

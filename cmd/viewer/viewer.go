@@ -21,6 +21,7 @@ type Viewer struct {
 	flex        *tview.Flex
 	tree        *tview.TreeView
 	commentView *tview.TextView
+	helpView    *tview.TextView
 	modal       *tview.Modal
 }
 
@@ -45,16 +46,18 @@ func SelectedText() string {
 func (v *Viewer) initPages() {
 	v.pages = tview.NewPages()
 
-	v.initFlex()
+	v.initTree()
 	v.initModal()
+	v.initHelpView()
 
 	v.pages.
 		AddPage("tree", v.flex, true, true).
-		AddPage("modal", v.modal, true, false)
+		AddPage("modal", v.modal, true, false).
+		AddPage("help", v.helpView, true, false)
 }
 
-func (v *Viewer) initFlex() {
-	v.initTree()
+func (v *Viewer) initTree() {
+	v.initTreeView()
 
 	v.flex = tview.NewFlex().
 		SetDirection(tview.FlexRow).
@@ -62,7 +65,7 @@ func (v *Viewer) initFlex() {
 		AddItem(v.commentView, 0, 1, false)
 }
 
-func (v *Viewer) initTree() {
+func (v *Viewer) initTreeView() {
 	rootDir := "."
 	root := tview.NewTreeNode(rootDir).
 		SetColor(tcell.ColorRed)
@@ -120,6 +123,11 @@ func (v *Viewer) initTree() {
 			case 'd':
 				v.pages.SwitchToPage("modal")
 				return nil
+			case 'h':
+				v.pages.SwitchToPage("help")
+				return nil
+			case 'q':
+				v.app.Stop()
 			}
 		}
 		return event
@@ -158,6 +166,33 @@ func (v *Viewer) initModal() {
 			}
 			v.pages.SwitchToPage("tree")
 		})
+}
+
+func (v *Viewer) initHelpView() {
+	v.helpView = tview.NewTextView().
+		SetText(`
+  /////////////////////////////
+ /     This is help view     /
+/////////////////////////////
+
+Enter: Select / Expand directory
+k: Up
+j: Down
+e: Edit command
+d: Delete command
+h: Open help view
+q: Quit`)
+	v.helpView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyRune:
+			switch event.Rune() {
+			case 'q':
+				v.pages.SwitchToPage("tree")
+				return nil
+			}
+		}
+		return event
+	})
 }
 
 func addNode(c typefile.Command, parentNode *tview.TreeNode) {

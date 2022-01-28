@@ -48,7 +48,9 @@ cmdboard -c
 
 |  Key   |  Action  |
 | ----   | ---- |
+|  Enter | Select / Expand directory |
 |  j     |  Down  |
 |  k     |  Up  |
-|  Enter | Select / Expand directory |
+|  e     | Edit command |
+|  h     | Open help view |
 |  d     | Delete command |

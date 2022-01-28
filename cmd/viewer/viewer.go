@@ -117,6 +117,9 @@ func (v *Viewer) initTreeView() {
 		switch event.Key() {
 		case tcell.KeyRune:
 			switch event.Rune() {
+			case 'a':
+				v.app.Suspend(v.addMode)
+				return nil
 			case 'e':
 				v.app.Suspend(v.editMode)
 				return nil
@@ -132,6 +135,22 @@ func (v *Viewer) initTreeView() {
 		}
 		return event
 	})
+}
+
+func (v *Viewer) addMode() {
+	node := v.tree.GetCurrentNode()
+	c := v.getCommandfromNode(node)
+	newName, newComment, err := Edit(c)
+	if err != nil {
+		panic(err)
+	}
+	c.Name = newName
+	c.Comment = newComment
+	v.commands[c.Id] = c
+	if err := utils.WriteCommand(v.commands); err != nil {
+		panic(err)
+	}
+	node.SetText(newName)
 }
 
 func (v *Viewer) editMode() {

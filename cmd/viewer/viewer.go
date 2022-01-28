@@ -3,12 +3,9 @@ package viewer
 import (
 	"cmdboard/cmd/utils"
 	"cmdboard/typefile"
-	"runtime"
 	"sort"
-	"time"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/micmonay/keybd_event"
 	"github.com/rivo/tview"
 )
 
@@ -19,21 +16,25 @@ var (
 
 type Viewer struct {
 	commands    map[int]typefile.Command
+	app         *tview.Application
 	pages       *tview.Pages
 	flex        *tview.Flex
 	tree        *tview.TreeView
 	commentView *tview.TextView
+	helpView    *tview.TextView
 	modal       *tview.Modal
 }
 
 func View(commands map[int]typefile.Command) {
+	app := tview.NewApplication()
 	viewer := &Viewer{
+		app:      app,
 		commands: commands,
 	}
 
 	viewer.initPages()
 
-	if err := tview.NewApplication().SetRoot(viewer.pages, true).Run(); err != nil {
+	if err := app.SetRoot(viewer.pages, true).Run(); err != nil {
 		panic(err)
 	}
 }
@@ -45,16 +46,18 @@ func SelectedText() string {
 func (v *Viewer) initPages() {
 	v.pages = tview.NewPages()
 
-	v.initFlex()
+	v.initTree()
 	v.initModal()
+	v.initHelpView()
 
 	v.pages.
 		AddPage("tree", v.flex, true, true).
-		AddPage("modal", v.modal, true, false)
+		AddPage("modal", v.modal, true, false).
+		AddPage("help", v.helpView, true, false)
 }
 
-func (v *Viewer) initFlex() {
-	v.initTree()
+func (v *Viewer) initTree() {
+	v.initTreeView()
 
 	v.flex = tview.NewFlex().
 		SetDirection(tview.FlexRow).
@@ -62,7 +65,7 @@ func (v *Viewer) initFlex() {
 		AddItem(v.commentView, 0, 1, false)
 }
 
-func (v *Viewer) initTree() {
+func (v *Viewer) initTreeView() {
 	rootDir := "."
 	root := tview.NewTreeNode(rootDir).
 		SetColor(tcell.ColorRed)
@@ -106,11 +109,7 @@ func (v *Viewer) initTree() {
 			}
 		} else {
 			selectedText = node.GetText()
-
-			err := exitCmd()
-			if err != nil {
-				panic(err)
-			}
+			v.app.Stop()
 		}
 	})
 
@@ -118,15 +117,56 @@ func (v *Viewer) initTree() {
 		switch event.Key() {
 		case tcell.KeyRune:
 			switch event.Rune() {
+			case 'a':
+				v.app.Suspend(v.addMode)
+				return nil
 			case 'e':
+				v.app.Suspend(v.editMode)
 				return nil
 			case 'd':
 				v.pages.SwitchToPage("modal")
 				return nil
+			case 'h':
+				v.pages.SwitchToPage("help")
+				return nil
+			case 'q':
+				v.app.Stop()
 			}
 		}
 		return event
 	})
+}
+
+func (v *Viewer) addMode() {
+	node := v.tree.GetCurrentNode()
+	c := v.getCommandfromNode(node)
+	newName, newComment, err := Edit(c)
+	if err != nil {
+		panic(err)
+	}
+	c.Name = newName
+	c.Comment = newComment
+	v.commands[c.Id] = c
+	if err := utils.WriteCommand(v.commands); err != nil {
+		panic(err)
+	}
+	node.SetText(newName)
+}
+
+func (v *Viewer) editMode() {
+	node := v.tree.GetCurrentNode()
+	c := v.getCommandfromNode(node)
+	newName, newComment, err := Edit(c)
+	if err != nil {
+		panic(err)
+	}
+	c.Name = newName
+	c.Comment = newComment
+	v.commands[c.Id] = c
+	if err := utils.WriteCommand(v.commands); err != nil {
+		panic(err)
+	}
+	node.SetText(newName)
 }
 
 func (v *Viewer) initModal() {
@@ -147,25 +187,31 @@ func (v *Viewer) initModal() {
 		})
 }
 
-func exitCmd() error {
-	kb, err := keybd_event.NewKeyBonding()
-	if err != nil {
-		panic(err)
-	}
+func (v *Viewer) initHelpView() {
+	v.helpView = tview.NewTextView().
+		SetText(`
+  /////////////////////////////
+ /     This is help view     /
+/////////////////////////////
 
-	// For linux, it is very important to wait 2 seconds
-	if runtime.GOOS == "linux" {
-		time.Sleep(2 * time.Second)
-	}
-
-	// exit tree view
-	kb.HasCTRL(true)
-	kb.SetKeys(keybd_event.VK_C)
-	err = kb.Launching()
-	if err != nil {
-		panic(err)
-	}
-	return nil
+Enter: Select / Expand directory
+k: Up
+j: Down
+e: Edit command
+d: Delete command
+h: Open help view
+q: Quit`)
+	v.helpView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyRune:
+			switch event.Rune() {
+			case 'q':
+				v.pages.SwitchToPage("tree")
+				return nil
+			}
+		}
+		return event
+	})
 }
 
 func addNode(c typefile.Command, parentNode *tview.TreeNode) {
@@ -187,4 +233,9 @@ func sortedFor(m map[int]typefile.Command, f func(typefile.Command)) {
 	for _, k := range keys {
 		f(m[k])
 	}
+}
+
+func (v *Viewer) getCommandfromNode(node *tview.TreeNode) typefile.Command {
+	reference := node.GetReference().(int)
+	return v.commands[reference]
 }

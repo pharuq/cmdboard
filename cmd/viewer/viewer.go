@@ -3,12 +3,9 @@ package viewer
 import (
 	"cmdboard/cmd/utils"
 	"cmdboard/typefile"
-	"runtime"
 	"sort"
-	"time"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/micmonay/keybd_event"
 	"github.com/rivo/tview"
 )
 
@@ -109,11 +106,7 @@ func (v *Viewer) initTree() {
 			}
 		} else {
 			selectedText = node.GetText()
-
-			err := exitCmd()
-			if err != nil {
-				panic(err)
-			}
+			v.app.Stop()
 		}
 	})
 
@@ -165,27 +158,6 @@ func (v *Viewer) initModal() {
 			}
 			v.pages.SwitchToPage("tree")
 		})
-}
-
-func exitCmd() error {
-	kb, err := keybd_event.NewKeyBonding()
-	if err != nil {
-		panic(err)
-	}
-
-	// For linux, it is very important to wait 2 seconds
-	if runtime.GOOS == "linux" {
-		time.Sleep(2 * time.Second)
-	}
-
-	// exit tree view
-	kb.HasCTRL(true)
-	kb.SetKeys(keybd_event.VK_C)
-	err = kb.Launching()
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }
 
 func addNode(c typefile.Command, parentNode *tview.TreeNode) {
